@@ -4,6 +4,8 @@ import com.rs.personalaccount.entity.BankAccount;
 import com.rs.personalaccount.service.BankAccountService;
 import com.rs.personalaccount.vo.AccountBalance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -41,7 +43,7 @@ public class BankAccountController {
     }
 
     @GetMapping("/balance/{balance}")
-    public Mono<AccountBalance> getAccountBalance(@PathVariable("balance") Integer accountNumber){
-        return bankAccountService.getBalanceOfAccount(accountNumber);
+    public ResponseEntity<Mono<AccountBalance>> getAccountBalance(@PathVariable("balance") Integer accountNumber){
+        return new ResponseEntity<>(bankAccountService.getBalanceOfAccount(accountNumber), HttpStatus.ACCEPTED);
     }
 }
