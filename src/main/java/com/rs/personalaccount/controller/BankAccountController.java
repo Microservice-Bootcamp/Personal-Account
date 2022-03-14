@@ -18,13 +18,15 @@ public class BankAccountController {
     private BankAccountService bankAccountService;
 
     @PostMapping("/save")
-    public Mono<BankAccount> saveAccount(@RequestBody BankAccount bankAccount){
-        return bankAccountService.saveBankAccount(bankAccount);
+    public Mono<ResponseEntity< BankAccount>> saveAccount(@RequestBody BankAccount bankAccount){
+        return bankAccountService.saveBankAccount(bankAccount)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.badRequest().build());
     }
 
     @GetMapping("/all")
-    public Flux<BankAccount> findAllAcountBank(){
-        return bankAccountService.findAllAcountBank();
+    public ResponseEntity< Flux<BankAccount>> findAllAcountBank(){
+        return new ResponseEntity<>(bankAccountService.findAllAcountBank(), HttpStatus.OK);
     }
 
     @GetMapping("/{number}")
@@ -33,17 +35,23 @@ public class BankAccountController {
     }
 
     @GetMapping("/detail/{account}")
-    public Mono<BankAccount> getPersonalBankAccount(@PathVariable("account") Integer accountNumber){
-        return bankAccountService.findAccountNumber(accountNumber);
+    public Mono<ResponseEntity< BankAccount>> getPersonalBankAccount(@PathVariable("account") Integer accountNumber){
+        return bankAccountService.findAccountNumber(accountNumber)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/update")
-    public Mono<String> updateBankAccount(@RequestBody BankAccount bankAccount){
-        return bankAccountService.updateBalanceAccount(bankAccount);
+    public ResponseEntity<Mono<String>> updateBankAccount(@RequestBody BankAccount bankAccount){
+        return new ResponseEntity<>(bankAccountService.updateBalanceAccount(bankAccount), HttpStatus.CREATED);
+        //return bankAccountService.updateBalanceAccount(bankAccount);
     }
 
     @GetMapping("/balance/{balance}")
-    public ResponseEntity<Mono<AccountBalance>> getAccountBalance(@PathVariable("balance") Integer accountNumber){
-        return new ResponseEntity<>(bankAccountService.getBalanceOfAccount(accountNumber), HttpStatus.ACCEPTED);
+    public Mono<ResponseEntity<AccountBalance>> getAccountBalance(@PathVariable("balance") Integer accountNumber){
+        return bankAccountService.getBalanceOfAccount(accountNumber)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+
     }
 }

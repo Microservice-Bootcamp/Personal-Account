@@ -6,6 +6,7 @@ import com.rs.personalaccount.repository.BankAccountRepository;
 import com.rs.personalaccount.vo.AccountBalance;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
@@ -30,6 +31,7 @@ public class BankAccountService {
                 });
 
     }
+
     public Mono<String> updateBalanceAccount(BankAccount bankAccount){
         return bankAccountRepository.save(bankAccount)
                 .flatMap(mm->Mono.empty());
@@ -43,6 +45,12 @@ public class BankAccountService {
 
     }
 
+    /**
+     * to create open account first check if the user is registered
+     * @param temporalIdUser String(NameOfUser)
+     * @param typeAccount String
+     * @return boolean
+     */
     public Mono<Boolean> existUserWithOneAccount(String temporalIdUser, String typeAccount){
         return existUserWithAccountBank(temporalIdUser)
                 .flatMap(value->{
@@ -66,8 +74,10 @@ public class BankAccountService {
     public Mono<AccountBalance> getBalanceOfAccount(Integer accountNumber){
 
         return  bankAccountRepository.findByAccountNumber(accountNumber)
-                .flatMap(value-> Mono.just(new AccountBalance(value.getBalance())))
-                .defaultIfEmpty(new AccountBalance(0));
+                .flatMap(value-> Mono.just(new AccountBalance(value.getBalance())));
+                //.defaultIfEmpty(new AccountBalance(0));
+
+
 
     }
 
