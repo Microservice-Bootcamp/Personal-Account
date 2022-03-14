@@ -6,7 +6,7 @@ import com.rs.personalaccount.repository.BankAccountRepository;
 import com.rs.personalaccount.vo.AccountBalance;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
+
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
@@ -33,11 +33,20 @@ public class BankAccountService {
     }
 
     public Mono<String> updateBalanceAccount(BankAccount bankAccount){
-        return bankAccountRepository.save(bankAccount)
-                .flatMap(mm->Mono.empty());
+        return bankAccountRepository.existsByIdBankAccount(bankAccount.getIdBankAccount())
+                .flatMap(condition->{
+                    if(condition.equals(true)){
+                        return bankAccountRepository.save(bankAccount)
+                                .flatMap(result->Mono.just("true"));
+                    }
+                    return Mono.empty();
+                });
+
+        //return bankAccountRepository.save(bankAccount)
+                //.flatMap(mm->Mono.empty());
     }
 
-    public Mono<Boolean> existUserWithAccountBank(String iduser){
+    private Mono<Boolean> existUserWithAccountBank(String iduser){
         return bankAccountRepository.existsByIdUser(iduser);
     }
     public Mono<Boolean> findUserAccountByAccountNumber(Integer accountNumber){
@@ -51,7 +60,7 @@ public class BankAccountService {
      * @param typeAccount String
      * @return boolean
      */
-    public Mono<Boolean> existUserWithOneAccount(String temporalIdUser, String typeAccount){
+    private Mono<Boolean> existUserWithOneAccount(String temporalIdUser, String typeAccount){
         return existUserWithAccountBank(temporalIdUser)
                 .flatMap(value->{
                     if(value){

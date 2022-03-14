@@ -15,6 +15,7 @@ public interface BankAccountRepository extends ReactiveMongoRepository<BankAccou
     Mono<Boolean> existsAllByIdUserAndTypeAccount(String idUser, String typeAccount);
     Mono<Boolean> existsByIdUser(String idUser);
     Mono<Boolean> existsByAccountNumber(Integer accountNumber);
+    Mono<Boolean> existsByIdBankAccount(String id);
 
 
 
