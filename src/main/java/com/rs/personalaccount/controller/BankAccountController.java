@@ -45,8 +45,8 @@ public class BankAccountController {
     public Mono<ResponseEntity<String>> updateBankAccount(@RequestBody BankAccount bankAccount){
         //return new ResponseEntity<>(bankAccountService.updateBalanceAccount(bankAccount), HttpStatus.CREATED);
         return bankAccountService.updateBalanceAccount(bankAccount)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.badRequest().build());
+                .map(ResponseEntity::ok);
+                //.defaultIfEmpty(ResponseEntity.badRequest().build());
     }
 
     @GetMapping("/balance/{balance}")

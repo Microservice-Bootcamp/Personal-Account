@@ -37,7 +37,7 @@ public class BankAccountService {
                 .flatMap(condition->{
                     if(condition.equals(true)){
                         return bankAccountRepository.save(bankAccount)
-                                .flatMap(result->Mono.just("true"));
+                                .flatMap(result->Mono.empty());
                     }
                     return Mono.empty();
                 });
