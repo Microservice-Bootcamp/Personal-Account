@@ -3,6 +3,7 @@ package com.rs.personalaccount.service;
 import com.rs.personalaccount.entity.BankAccount;
 import com.rs.personalaccount.repository.BankAccountRepository;
 
+import com.rs.personalaccount.vo.AccountBalance;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,17 @@ public class BankAccountService {
                 });
 
     }
+    public Mono<String> updateBalanceAccount(BankAccount bankAccount){
+        return bankAccountRepository.save(bankAccount)
+                .flatMap(mm->Mono.empty());
+    }
 
     public Mono<Boolean> existUserWithAccountBank(String iduser){
         return bankAccountRepository.existsByIdUser(iduser);
+    }
+    public Mono<Boolean> findUserAccountByAccountNumber(Integer accountNumber){
+        return bankAccountRepository.existsByAccountNumber(accountNumber);
+
     }
 
     public Mono<Boolean> existUserWithOneAccount(String temporalIdUser, String typeAccount){
@@ -48,6 +57,18 @@ public class BankAccountService {
 
     public Flux<BankAccount> findAllAcountBank(){
         return bankAccountRepository.findAll();
+    }
+
+    public Mono<BankAccount> findAccountNumber(Integer accountNumber){
+        return bankAccountRepository.findByAccountNumber(accountNumber);
+    }
+
+    public Mono<AccountBalance> getBalanceOfAccount(Integer accountNumber){
+
+        return  bankAccountRepository.findByAccountNumber(accountNumber)
+                .flatMap(value-> Mono.just(new AccountBalance(value.getBalance())))
+                .defaultIfEmpty(new AccountBalance(0));
+
     }
 
 }

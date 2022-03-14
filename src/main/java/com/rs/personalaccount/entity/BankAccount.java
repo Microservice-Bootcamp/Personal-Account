@@ -1,14 +1,17 @@
 package com.rs.personalaccount.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "bankAccount")
 public class BankAccount {
+
     @Id
     private String idBankAccount;
 
