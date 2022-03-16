@@ -1,7 +1,6 @@
 package com.rs.personalaccount.repository;
 
 import com.rs.personalaccount.entity.BankAccount;
-import com.rs.personalaccount.repository.custom.CustomPersonalAccountRepository;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 
@@ -9,7 +8,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import reactor.core.publisher.Mono;
 
 @EnableReactiveMongoRepositories
-public interface BankAccountRepository extends ReactiveMongoRepository<BankAccount, String>, CustomPersonalAccountRepository {
+public interface BankAccountRepository extends ReactiveMongoRepository<BankAccount, String> {
 
     Mono<BankAccount> findByAccountNumber(Integer accountNumber);
     Mono<Boolean> existsAllByIdUserAndTypeAccount(String idUser, String typeAccount);

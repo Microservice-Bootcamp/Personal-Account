@@ -24,7 +24,7 @@ public class BankAccountService {
     public Mono<BankAccount> saveBankAccount(BankAccount bankAccount){
         return existUserWithOneAccount(tempUser, bankAccount.getTypeAccount())
                 .flatMap(value ->{
-                    if(!value){
+                    if(!value && bankAccount.getBalance()>=0){
                         return bankAccountRepository.save(bankAccount);
                     }
                     return Mono.empty();
