@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: personal-account
+  data:
+    mongodb:
+      uri: mongodb+srv://admin:microservice@cluster0.nxqed.mongodb.net/account-microservice?retryWrites=true&w=majority
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8090

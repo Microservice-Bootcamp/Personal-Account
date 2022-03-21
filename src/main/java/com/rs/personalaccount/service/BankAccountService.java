@@ -3,7 +3,11 @@ package com.rs.personalaccount.service;
 import com.rs.personalaccount.entity.BankAccount;
 import com.rs.personalaccount.repository.BankAccountRepository;
 
+import com.rs.personalaccount.util.WebClientTemplate;
 import com.rs.personalaccount.vo.AccountBalance;
+import com.rs.personalaccount.vo.UserCredit;
+import com.rs.personalaccount.vo.UserRegistered;
+import com.rs.personalaccount.vo.VipCustomer;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,23 +16,23 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Predicate;
+
+
 @Log4j2
 @Service
 public class BankAccountService {
 
-    private String tempUser = "juana";
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
 
+    @Autowired
+    private WebClientTemplate webClientTemplate;
+
     public Mono<BankAccount> saveBankAccount(BankAccount bankAccount){
-        return existUserWithOneAccount(tempUser, bankAccount.getTypeAccount())
-                .flatMap(value ->{
-                    if(!value && bankAccount.getBalance()>=0){
-                        return bankAccountRepository.save(bankAccount);
-                    }
-                    return Mono.empty();
-                });
+        return existUserWithOneAccount(bankAccount.getDniUser(), bankAccount.getTypeAccount())
+                .flatMap(value -> validateSaveWithCriteri(value, bankAccount,bankAccount.getTypeAccount()));
 
     }
 
@@ -46,9 +50,9 @@ public class BankAccountService {
                 //.flatMap(mm->Mono.empty());
     }
 
-    private Mono<Boolean> existUserWithAccountBank(String iduser){
-        return bankAccountRepository.existsByIdUser(iduser);
-    }
+
+
+
     public Mono<Boolean> findUserAccountByAccountNumber(Integer accountNumber){
         return bankAccountRepository.existsByAccountNumber(accountNumber);
 
@@ -56,20 +60,13 @@ public class BankAccountService {
 
     /**
      * to create open account first check if the user is registered
-     * @param temporalIdUser String(NameOfUser)
+     * @param dniNumber Integer(number of dni)
      * @param typeAccount String
      * @return boolean
      */
-    private Mono<Boolean> existUserWithOneAccount(String temporalIdUser, String typeAccount){
-        return existUserWithAccountBank(temporalIdUser)
-                .flatMap(value->{
-                    if(value){
-                        return bankAccountRepository.existsAllByIdUserAndTypeAccount(temporalIdUser, typeAccount);
-                    }
-                    else{
-                        return Mono.just(false);
-                    }
-                });
+    private Mono<Boolean> existUserWithOneAccount(Integer dniNumber, String typeAccount){
+        return userIsRegistered(dniNumber)
+                .flatMap(value->validateIfUserIsRegistered(value,dniNumber,typeAccount));
     }
 
     public Flux<BankAccount> findAllAcountBank(){
@@ -81,13 +78,74 @@ public class BankAccountService {
     }
 
     public Mono<AccountBalance> getBalanceOfAccount(Integer accountNumber){
-
         return  bankAccountRepository.findByAccountNumber(accountNumber)
                 .flatMap(value-> Mono.just(new AccountBalance(value.getBalance())));
                 //.defaultIfEmpty(new AccountBalance(0));
-
-
-
     }
+    private Mono<UserRegistered> userIsRegistered(Integer dniNumber){
+        return webClientTemplate.templateWebClient("http://localhost:8092")
+                .get()
+                .uri("/user/status/"+dniNumber)
+                .retrieve()
+                .bodyToMono(UserRegistered.class);
+    }
+    private Mono<VipCustomer> isUserVip(Integer dniNumber){
+        return webClientTemplate.templateWebClient("http://localhost:8092")
+                .get()
+                .uri("/user/person/"+dniNumber)
+                .retrieve()
+                .bodyToMono(VipCustomer.class);
+    }
+
+    private Mono<UserCredit> userVipHaveCredit(Integer dniNumber){
+        return webClientTemplate.templateWebClient("http://localhost:8093")
+                .get()
+                .uri("/credit/status/"+dniNumber)
+                .retrieve()
+                .bodyToMono(UserCredit.class);
+    }
+
+    private Mono<Boolean> validateIfUserIsRegistered (UserRegistered value, Integer dniNumber, String typeAccount){
+        if(value.getStatus()){
+            return bankAccountRepository.existsByDniUserAndTypeAccount(dniNumber,typeAccount);
+        }
+        else{
+            return Mono.just(false);
+        }
+    }
+
+    /**
+     * user can only have account of each type
+     * balance must be greater than 0
+     * type account must be ahorro OR corriente OR fijo
+     * check if is Vip user
+     * for vip customer must have credit
+     * @return response as BankAccount
+     */
+    private Mono<BankAccount> validateSaveWithCriteri(Boolean value, BankAccount bankAccount, String typeAccount){
+        return isUserVip(bankAccount.getDniUser())
+                .flatMap(condition ->{
+                    /*if(!value && bankAccount.getBalance()>=0 && accountTypeAccepted.test(typeAccount)&& condition.getStatus().equals(true)){
+                        bankAccount.setBenefitStatus(true);
+                        return bankAccountRepository.save(bankAccount);
+                    }
+                    return Mono.empty();/*
+                     */
+                    return userVipHaveCredit(bankAccount.getDniUser())
+                            .flatMap(haveCredit->{
+                                if(!value && bankAccount.getBalance()>=0 && accountTypeAccepted.test(typeAccount)){
+                                    if((condition.getStatus().equals(true) && haveCredit.getStatus().equals(true))){
+                                        bankAccount.setBenefitStatus(true);
+                                    }
+                                    return bankAccountRepository.save(bankAccount);
+                                }
+                                return Mono.empty();
+
+                            });
+                });
+    }
+
+    Predicate<String> accountTypeAccepted = type ->type.equals("ahorro") || type.equals("corriente") || type.equals("fijo");
+
 
 }
