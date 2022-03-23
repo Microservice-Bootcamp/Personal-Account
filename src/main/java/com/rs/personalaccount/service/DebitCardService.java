@@ -7,6 +7,7 @@ import com.rs.personalaccount.repository.DebitCardRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class DebitCardService {
                 .switchIfEmpty(Mono.empty())
                 .flatMap(x -> {
                     log.info("Initialization of save method bl...");
-                    BankAccount principalAccount = x.stream().filter(account -> account.getAccountNumber() == debitCard.getPrincipalBankAccount()).findFirst().orElse(null);
+                    BankAccount principalAccount = x.stream().filter(account -> account.getAccountNumber().equals(debitCard.getPrincipalBankAccount())).findFirst().orElse(null);
 
                     if(principalAccount == null) {
                         return Mono.empty();
@@ -39,5 +40,9 @@ public class DebitCardService {
 
                     return debitCardRepository.save(debitCard);
                 });
+    }
+
+    public Flux<DebitCard> findAll() {
+        return debitCardRepository.findAll();
     }
 }
