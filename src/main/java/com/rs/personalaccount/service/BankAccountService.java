@@ -156,12 +156,12 @@ public class BankAccountService {
                 .flatMap(account -> {
                     var resume = new ResumeProduct();
                     Map<String, Object> lol = new HashMap<>();
-                    List<Map<String,Object>> accounts = new ArrayList<>();
+                    //List<Map<String,Object>> accounts = new ArrayList<>();
                     //account.forEach(element -> accounts.add(1,2));
                     account.forEach(element -> lol.put(element.getTypeAccount(),element.getAccountNumber()));
-                    accounts.add(lol);
+                    //accounts.add(lol);
                     resume.setDniUser(dniNumber);
-                    resume.setAccounts(accounts);
+                    resume.setAccounts(lol);
                     return  Mono.just(resume);
                 });
     }

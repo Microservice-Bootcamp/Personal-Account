@@ -15,5 +15,6 @@ import java.util.Map;
 public class ResumeProduct {
 
     private Integer dniUser;
-    private List<Map<String, Object>> accounts;
+    //private List<Map<String, Object>> accounts;
+    private Map<String, Object> accounts;
 }
