@@ -18,6 +18,7 @@ public interface BankAccountRepository extends ReactiveMongoRepository<BankAccou
     Flux<BankAccount> findAllByDniUserAndAccountNumberIn(Integer dniUser, List<Integer> accountNumbers);
     Mono<Boolean> existsByAccountNumber(Integer accountNumber);
     Mono<Boolean> existsByIdBankAccount(String id);
+    Flux<BankAccount> findAllByDniUser(Integer dniNumber);
 
 
 
