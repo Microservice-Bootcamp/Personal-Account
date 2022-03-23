@@ -3,6 +3,7 @@ package com.rs.personalaccount.controller;
 import com.rs.personalaccount.entity.BankAccount;
 import com.rs.personalaccount.service.BankAccountService;
 import com.rs.personalaccount.vo.AccountBalance;
+import com.rs.personalaccount.vo.ResumeProduct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,10 @@ public class BankAccountController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
 
+    }
+
+    @GetMapping("/resume/{dniNumber}")
+    public Mono<ResumeProduct> allAccountsByDniNumber(@PathVariable("dniNumber") Integer dniNumber){
+        return bankAccountService.allAccountByDni(dniNumber);
     }
 }

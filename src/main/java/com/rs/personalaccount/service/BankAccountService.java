@@ -4,10 +4,7 @@ import com.rs.personalaccount.entity.BankAccount;
 import com.rs.personalaccount.repository.BankAccountRepository;
 
 import com.rs.personalaccount.util.WebClientTemplate;
-import com.rs.personalaccount.vo.AccountBalance;
-import com.rs.personalaccount.vo.UserCredit;
-import com.rs.personalaccount.vo.UserRegistered;
-import com.rs.personalaccount.vo.VipCustomer;
+import com.rs.personalaccount.vo.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,6 +13,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 
@@ -146,6 +147,24 @@ public class BankAccountService {
     }
 
     Predicate<String> accountTypeAccepted = type ->type.equals("ahorro") || type.equals("corriente") || type.equals("fijo");
+
+    public Mono<ResumeProduct> allAccountByDni (Integer dniNumber){
+        return bankAccountRepository.findAllByDniUser(dniNumber)
+                .filter(account -> account.getDniUser()!=null)
+                .switchIfEmpty(Mono.empty())
+                .collectList()
+                .flatMap(account -> {
+                    var resume = new ResumeProduct();
+                    Map<String, Object> lol = new HashMap<>();
+                    List<Map<String,Object>> accounts = new ArrayList<>();
+                    //account.forEach(element -> accounts.add(1,2));
+                    account.forEach(element -> lol.put(element.getTypeAccount(),element.getAccountNumber()));
+                    accounts.add(lol);
+                    resume.setDniUser(dniNumber);
+                    resume.setAccounts(accounts);
+                    return  Mono.just(resume);
+                });
+    }
 
 
 }
