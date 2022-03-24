@@ -11,4 +11,6 @@ import java.util.List;
 public interface DebitCardRepository extends ReactiveMongoRepository<DebitCard, String> {
 
     Mono<DebitCard> findByBankAccounts_AccountNumberIn(List<Integer> accountNumber);
+
+    Mono<DebitCard> findByCardNumber(String cardNumber);
 }

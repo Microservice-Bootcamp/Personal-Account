@@ -65,4 +65,8 @@ public class DebitCardService {
     public Flux<DebitCard> findAll() {
         return debitCardRepository.findAll();
     }
+
+    public Mono<DebitCard> findByCardNumber(String cardNumber) {
+        return debitCardRepository.findByCardNumber(cardNumber);
+    }
 }
