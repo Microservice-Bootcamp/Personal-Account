@@ -5,6 +5,7 @@ import com.rs.personalaccount.entity.DebitCard;
 import com.rs.personalaccount.repository.BankAccountRepository;
 import com.rs.personalaccount.repository.DebitCardRepository;
 import com.rs.personalaccount.vo.Account;
+import com.rs.personalaccount.vo.AccountBalance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,5 +69,20 @@ public class DebitCardService {
 
     public Mono<DebitCard> findByCardNumber(String cardNumber) {
         return debitCardRepository.findByCardNumber(cardNumber);
+    }
+
+    public Mono<AccountBalance> getBalanceOfAccount(String cardNumber){
+        return debitCardRepository.findByCardNumber(cardNumber)
+                .flatMap(x -> {
+                    Account account = x.getBankAccounts().stream().filter(acc -> acc.getFlagPrincipal() == true)
+                            .findFirst().orElse(null);
+
+                    if(account == null) {
+                        return Mono.empty();
+                    }
+
+                    return bankAccountRepository.findByAccountNumber(account.getAccountNumber())
+                            .flatMap(value-> Mono.just(new AccountBalance(value.getBalance())));
+                });
     }
 }
